@@ -383,66 +383,64 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
             {semStatus ? (
               <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
             ) : (
-              <>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={82}
-                      outerRadius={96}
-                      paddingAngle={2}
-                      stroke="none"
-                      animationDuration={900}
-                    >
-                      {statusData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.hex} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      cursor={false}
-                      wrapperStyle={tip.wrapperStyle}
-                      allowEscapeViewBox={tip.allowEscapeViewBox}
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const item = payload[0];
-                        const name = String(item?.name ?? "");
-                        const isTransicao = name.toLowerCase().includes("transi");
-                        const color = isTransicao ? "#64748B" : isLight ? "#B45309" : "#F59E0B";
-                        return (
-                          <div style={tip.contentStyle}>
-                            <span style={{ ...tip.itemStyle, color }}>
-                              {name}: {item?.value}
-                            </span>
-                          </div>
-                        );
-                      }}
-                    />
-                    <Legend
-                      iconType="circle"
-                      iconSize={8}
-                      content={() => (
-                        <div className="flex items-center justify-center gap-6 pt-2">
-                          {statusData.map((entry) => (
-                            <span key={entry.name} className="flex items-center gap-2">
-                              <span
-                                className="h-2 w-2 shrink-0 rounded-full"
-                                style={{ backgroundColor: entry.hex }}
-                              />
-                              <span className="text-[11px] font-medium text-zinc-900 dark:text-white">
-                                {entry.name}
-                              </span>
-                            </span>
-                          ))}
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={82}
+                    outerRadius={96}
+                    paddingAngle={2}
+                    stroke="none"
+                    animationDuration={900}
+                  >
+                    {statusData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.hex} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    cursor={false}
+                    wrapperStyle={tip.wrapperStyle}
+                    allowEscapeViewBox={tip.allowEscapeViewBox}
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const item = payload[0];
+                      const name = String(item?.name ?? "");
+                      const isTransicao = name.toLowerCase().includes("transi");
+                      const color = isTransicao ? "#64748B" : isLight ? "#B45309" : "#F59E0B";
+                      return (
+                        <div style={tip.contentStyle}>
+                          <span style={{ ...tip.itemStyle, color }}>
+                            {name}: {item?.value}
+                          </span>
                         </div>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </>
+                      );
+                    }}
+                  />
+                  <Legend
+                    iconType="circle"
+                    iconSize={8}
+                    content={() => (
+                      <div className="flex items-center justify-center gap-6 pt-2">
+                        {statusData.map((entry) => (
+                          <span key={entry.name} className="flex items-center gap-2">
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{ backgroundColor: entry.hex }}
+                            />
+                            <span className="text-[11px] font-medium text-zinc-900 dark:text-white">
+                              {entry.name}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
             )}
           </div>
         </Panel>
