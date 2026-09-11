@@ -374,6 +374,7 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </div>
         </Panel>
 
