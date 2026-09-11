@@ -3,9 +3,11 @@ export interface Appointment {
   nome: string;
   email: string;
   statusPorteiro: string;
+  /** Coluna E — Status */
   status: string;
   dataHora: string;
   medico: string;
+  /** Coluna H — Procedimento */
   procedimento: string;
   /** Coluna K — Tentativas_Reativacao */
   tentativasReativacao: number;
@@ -13,48 +15,96 @@ export interface Appointment {
   campanhaReativacao: number;
 }
 
-function parseCSVLine(line: string): string[] {
-  const result: string[] = [];
+/**
+ * Divide o CSV bruto em linhas/colunas respeitando aspas — inclusive quebras
+ * de linha dentro de células, que o GViz devolve com frequência.
+ */
+function parseCSVGrid(text: string, delimiter: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
   let current = "";
   let inQuotes = false;
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+
     if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
+      if (inQuotes && text[i + 1] === '"') {
         current += '"';
         i++;
       } else {
         inQuotes = !inQuotes;
       }
-    } else if (char === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
-    } else {
-      current += char;
+      continue;
     }
+
+    if (!inQuotes && char === delimiter) {
+      row.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    if (!inQuotes && (char === "\n" || char === "\r")) {
+      if (char === "\r" && text[i + 1] === "\n") i++;
+      row.push(current.trim());
+      current = "";
+      if (row.some((c) => c !== "")) rows.push(row);
+      row = [];
+      continue;
+    }
+
+    current += char;
   }
 
-  result.push(current.trim());
-  return result;
+  row.push(current.trim());
+  if (row.some((c) => c !== "")) rows.push(row);
+
+  return rows;
+}
+
+function detectDelimiter(text: string): string {
+  const firstLine = text.split(/\r?\n/)[0] ?? "";
+  const commas = (firstLine.match(/,/g) ?? []).length;
+  const semis = (firstLine.match(/;/g) ?? []).length;
+  const tabs = (firstLine.match(/\t/g) ?? []).length;
+  if (semis > commas && semis >= tabs) return ";";
+  if (tabs > commas && tabs > semis) return "\t";
+  return ",";
 }
 
 function toInt(value: string | undefined): number {
-  const n = parseInt((value ?? "0").trim(), 10);
+  const n = parseInt((value ?? "").replace(/[^\d-]/g, ""), 10);
   return Number.isFinite(n) ? n : 0;
 }
 
-export function parseCSV(csvText: string): Appointment[] {
-  const lines = csvText
-    .trim()
-    .split(/\r?\n/)
-    .filter((l) => l.trim());
-  if (lines.length < 2) return [];
+/** Reconhece a linha de cabeçalho da planilha para não tratá-la como paciente. */
+function isHeaderRow(cols: string[]): boolean {
+  const joined = cols.join(" ").toLowerCase();
+  return (
+    joined.includes("telefone") ||
+    joined.includes("nome") ||
+    joined.includes("status") ||
+    joined.includes("procedimento")
+  );
+}
 
+/**
+ * Mapeamento fixo por posição de coluna da planilha:
+ * A telefone · B nome · C email · D status porteiro · E status ·
+ * F data/hora · G médico · H procedimento · I campanha · K reativação.
+ */
+export function parseCSV(csvText: string): Appointment[] {
+  const text = csvText.replace(/^\uFEFF/, "").trim();
+  if (!text) return [];
+
+  const grid = parseCSVGrid(text, detectDelimiter(text));
+  if (grid.length === 0) return [];
+
+  const startIndex = isHeaderRow(grid[0] ?? []) ? 1 : 0;
   const appointments: Appointment[] = [];
 
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCSVLine(lines[i] ?? "");
+  for (let i = startIndex; i < grid.length; i++) {
+    const cols = grid[i] ?? [];
 
     const telefone = (cols[0] ?? "").trim();
     const nome = (cols[1] ?? "").trim();
@@ -64,7 +114,6 @@ export function parseCSV(csvText: string): Appointment[] {
     const dataHora = (cols[5] ?? "").trim();
     const medico = (cols[6] ?? "").trim();
     const procedimento = (cols[7] ?? "").trim();
-    // Coluna I (index 8) e Coluna K (index 10)
     const campanhaReativacao = toInt(cols[8]);
     const tentativasReativacao = toInt(cols[10]);
 
