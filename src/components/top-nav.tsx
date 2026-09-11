@@ -20,9 +20,9 @@ export function TopNav({ activeTab, onTabChange, directorUnlocked }: TopNavProps
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // A pílula dourada só envolve o Painel do Diretor quando o acesso está liberado
-  // E o diretor está de facto a visualizar o dashboard.
-  const diretorAtivo = activeTab === "diretor" && directorUnlocked;
+  // O dourado definitivo só aparece no painel ativo após o desbloqueio.
+  const diretorAtivo = activeTab === "diretor";
+  const diretorPremium = diretorAtivo && directorUnlocked;
 
   return (
     <header
@@ -57,12 +57,14 @@ export function TopNav({ activeTab, onTabChange, directorUnlocked }: TopNavProps
             <nav className="flex items-center gap-1 rounded-full border border-gold/10 bg-black/50 p-1 backdrop-blur-lg light:border-amber-600/15 light:bg-white light:backdrop-blur-none">
               <NavButton
                 active={activeTab === "recepcao"}
+                premium={false}
                 onClick={() => onTabChange("recepcao")}
                 icon={<ClipboardList className="h-4 w-4" strokeWidth={1.5} />}
                 label="Recepção"
               />
               <NavButton
                 active={diretorAtivo}
+                premium={diretorPremium}
                 onClick={() => onTabChange("diretor")}
                 icon={
                   directorUnlocked ? (
@@ -84,11 +86,13 @@ export function TopNav({ activeTab, onTabChange, directorUnlocked }: TopNavProps
 
 function NavButton({
   active,
+  premium,
   onClick,
   icon,
   label,
 }: {
   active: boolean;
+  premium: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
@@ -98,9 +102,11 @@ function NavButton({
       onClick={onClick}
       className={cn(
         "relative flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium tracking-wide transition-all duration-300 sm:px-4 sm:text-sm",
-        active
-          ? "bg-gradient-gold text-black shadow-glow-gold"
-          : "text-muted-foreground hover:text-foreground",
+        premium
+          ? "border border-amber-500/30 bg-gradient-gold text-black shadow-glow-gold"
+          : active
+            ? "border border-zinc-200 bg-zinc-100 text-zinc-900 dark:border-white/10 dark:bg-zinc-900/60 dark:text-zinc-100 dark:backdrop-blur-sm"
+            : "border border-transparent text-muted-foreground hover:text-foreground",
       )}
     >
       {icon}
