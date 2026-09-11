@@ -328,52 +328,54 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
             {semProcedimentos ? (
               <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
             ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={procedureData} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="goldArea" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#D4AF37" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#D4AF37" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  vertical={false}
-                  stroke={isLight ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.05)"}
-                  strokeDasharray="3 3"
-                />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: isLight ? "#475569" : "#94A3B8" }}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  allowDecimals={false}
-                  tick={{ fontSize: 11, fill: isLight ? "#475569" : "#94A3B8" }}
-                />
-                <Tooltip
-                  cursor={{ stroke: "rgba(212,175,55,0.2)" }}
-                  contentStyle={tip.contentStyle}
-                  labelStyle={tip.labelStyle}
-                  itemStyle={tip.itemStyle}
-                  wrapperStyle={tip.wrapperStyle}
-                  allowEscapeViewBox={tip.allowEscapeViewBox}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  name="Agendamentos"
-                  stroke="#D4AF37"
-                  strokeWidth={1}
-                  fill="url(#goldArea)"
-                  dot={false}
-                  activeDot={{ r: 3, fill: "#D4AF37", stroke: "none" }}
-                  animationDuration={900}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={procedureData} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="goldArea" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#D4AF37" stopOpacity={0.15} />
+                        <stop offset="100%" stopColor="#D4AF37" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      vertical={false}
+                      stroke={isLight ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.05)"}
+                      strokeDasharray="3 3"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 11, fill: isLight ? "#475569" : "#94A3B8" }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                      tick={{ fontSize: 11, fill: isLight ? "#475569" : "#94A3B8" }}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: "rgba(212,175,55,0.2)" }}
+                      contentStyle={tip.contentStyle}
+                      labelStyle={tip.labelStyle}
+                      itemStyle={tip.itemStyle}
+                      wrapperStyle={tip.wrapperStyle}
+                      allowEscapeViewBox={tip.allowEscapeViewBox}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      name="Agendamentos"
+                      stroke="#D4AF37"
+                      strokeWidth={1}
+                      fill="url(#goldArea)"
+                      dot={false}
+                      activeDot={{ r: 3, fill: "#D4AF37", stroke: "none" }}
+                      animationDuration={900}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </>
             )}
           </div>
         </Panel>
@@ -383,64 +385,66 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
             {semStatus ? (
               <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={82}
-                    outerRadius={96}
-                    paddingAngle={2}
-                    stroke="none"
-                    animationDuration={900}
-                  >
-                    {statusData.map((entry) => (
-                      <Cell key={entry.name} fill={entry.hex} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    cursor={false}
-                    wrapperStyle={tip.wrapperStyle}
-                    allowEscapeViewBox={tip.allowEscapeViewBox}
-                    content={({ active, payload }) => {
-                      if (!active || !payload?.length) return null;
-                      const item = payload[0];
-                      const name = String(item?.name ?? "");
-                      const isTransicao = name.toLowerCase().includes("transi");
-                      const color = isTransicao ? "#64748B" : isLight ? "#B45309" : "#F59E0B";
-                      return (
-                        <div style={tip.contentStyle}>
-                          <span style={{ ...tip.itemStyle, color }}>
-                            {name}: {item?.value}
-                          </span>
-                        </div>
-                      );
-                    }}
-                  />
-                  <Legend
-                    iconType="circle"
-                    iconSize={8}
-                    content={() => (
-                      <div className="flex items-center justify-center gap-6 pt-2">
-                        {statusData.map((entry) => (
-                          <span key={entry.name} className="flex items-center gap-2">
-                            <span
-                              className="h-2 w-2 shrink-0 rounded-full"
-                              style={{ backgroundColor: entry.hex }}
-                            />
-                            <span className="text-[11px] font-medium text-zinc-900 dark:text-white">
-                              {entry.name}
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statusData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={82}
+                      outerRadius={96}
+                      paddingAngle={2}
+                      stroke="none"
+                      animationDuration={900}
+                    >
+                      {statusData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.hex} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      cursor={false}
+                      wrapperStyle={tip.wrapperStyle}
+                      allowEscapeViewBox={tip.allowEscapeViewBox}
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+                        const item = payload[0];
+                        const name = String(item?.name ?? "");
+                        const isTransicao = name.toLowerCase().includes("transi");
+                        const color = isTransicao ? "#64748B" : isLight ? "#B45309" : "#F59E0B";
+                        return (
+                          <div style={tip.contentStyle}>
+                            <span style={{ ...tip.itemStyle, color }}>
+                              {name}: {item?.value}
                             </span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Legend
+                      iconType="circle"
+                      iconSize={8}
+                      content={() => (
+                        <div className="flex items-center justify-center gap-6 pt-2">
+                          {statusData.map((entry) => (
+                            <span key={entry.name} className="flex items-center gap-2">
+                              <span
+                                className="h-2 w-2 shrink-0 rounded-full"
+                                style={{ backgroundColor: entry.hex }}
+                              />
+                              <span className="text-[11px] font-medium text-zinc-900 dark:text-white">
+                                {entry.name}
+                              </span>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </>
             )}
           </div>
         </Panel>
