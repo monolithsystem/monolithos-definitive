@@ -202,7 +202,7 @@ export function DirectorView({ unlocked, onUnlock }: DirectorViewProps) {
 
 function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
   const { isLight } = useTheme();
-  const { appointments } = useAppointments();
+  const { appointments, error, isEmptyButConnected } = useAppointments();
   const tip = tooltipStyles(isLight);
 
   const confirmados = useMemo(
@@ -232,8 +232,21 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
   );
   const semDados = appointments.length === 0;
 
-  const taxaConfirmacao =
-    totalAgendados > 0 ? `${Math.round((confirmados / totalAgendados) * 100)}%` : "0%";
+  const taxaConfirmacao = useMemo(() => {
+    if (error) return EMPTY_VALUE;
+    if (isEmptyButConnected) return "0%";
+    if (totalAgendados === 0) return "0%";
+    return `${Math.round((confirmados / totalAgendados) * 100)}%`;
+  }, [confirmados, totalAgendados, error, isEmptyButConnected]);
+
+  // Auxiliar: decide o valor dos cards conforme o estado de conexão.
+  const cardValue = (real: number) => {
+    if (error) return EMPTY_VALUE;
+    if (isEmptyButConnected) return 0;
+    return real;
+  };
+
+  const cardEmpty = error || (semDados && !isEmptyButConnected);
 
   // Coluna H (Procedimento): agrupamento real e dinâmico da planilha.
   const procedureData = useMemo(() => {
@@ -252,6 +265,10 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
 
   const semProcedimentos = procedureData.length === 0;
   const semStatus = confirmados + emTransicao === 0;
+
+  const EMPTY_CONNECTED_TITLE = "Monitoramento estratégico em espera";
+  const EMPTY_CONNECTED_SUBTITLE =
+    "Conexão estável. Insira novas movimentações de pacientes para projetar os indicadores de procedimentos e taxas de confirmação.";
 
   const statusData = useMemo(
     () => [
