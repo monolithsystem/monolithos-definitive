@@ -305,32 +305,32 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
         <SummaryCard
           icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
           label="Total Agendados"
-          value={semDados ? EMPTY_VALUE : totalAgendados}
-          empty={semDados}
+          value={cardValue(totalAgendados)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-amber-500/60 dark:border-l-amber-500"
           iconColor="text-amber-500"
         />
         <SummaryCard
           icon={<TrendingUp className="h-5 w-5" strokeWidth={1.5} />}
           label="Taxa de Confirmação"
-          value={semDados ? EMPTY_VALUE : taxaConfirmacao}
-          empty={semDados}
+          value={taxaConfirmacao}
+          empty={cardEmpty}
           accent="border-l-4 border-l-emerald-600/60 dark:border-l-emerald-600"
           iconColor="text-emerald-600 dark:text-emerald-500"
         />
         <SummaryCard
           icon={<AlertTriangle className="h-5 w-5" strokeWidth={1.5} />}
           label="Pendências de Confirmação"
-          value={semDados ? EMPTY_VALUE : pendenciasConfirmacao}
-          empty={semDados}
+          value={cardValue(pendenciasConfirmacao)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-rose-600/60 dark:border-l-rose-600"
           iconColor="text-rose-600 dark:text-rose-500"
         />
         <SummaryCard
           icon={<RefreshCw className="h-5 w-5" strokeWidth={1.5} />}
           label="Campanhas de Reativação"
-          value={semDados ? EMPTY_VALUE : campanhasReativacao}
-          empty={semDados}
+          value={cardValue(campanhasReativacao)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-purple-600/60 dark:border-l-purple-500"
           iconColor="text-purple-600 dark:text-purple-400"
         />
