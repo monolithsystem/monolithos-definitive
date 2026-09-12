@@ -202,7 +202,7 @@ export function DirectorView({ unlocked, onUnlock }: DirectorViewProps) {
 
 function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
   const { isLight } = useTheme();
-  const { appointments } = useAppointments();
+  const { appointments, error, isEmptyButConnected } = useAppointments();
   const tip = tooltipStyles(isLight);
 
   const confirmados = useMemo(
@@ -232,8 +232,21 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
   );
   const semDados = appointments.length === 0;
 
-  const taxaConfirmacao =
-    totalAgendados > 0 ? `${Math.round((confirmados / totalAgendados) * 100)}%` : "0%";
+  const taxaConfirmacao = useMemo(() => {
+    if (error) return EMPTY_VALUE;
+    if (isEmptyButConnected) return "0%";
+    if (totalAgendados === 0) return "0%";
+    return `${Math.round((confirmados / totalAgendados) * 100)}%`;
+  }, [confirmados, totalAgendados, error, isEmptyButConnected]);
+
+  // Auxiliar: decide o valor dos cards conforme o estado de conexão.
+  const cardValue = (real: number) => {
+    if (error) return EMPTY_VALUE;
+    if (isEmptyButConnected) return 0;
+    return real;
+  };
+
+  const cardEmpty = error || (semDados && !isEmptyButConnected);
 
   // Coluna H (Procedimento): agrupamento real e dinâmico da planilha.
   const procedureData = useMemo(() => {
@@ -252,6 +265,10 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
 
   const semProcedimentos = procedureData.length === 0;
   const semStatus = confirmados + emTransicao === 0;
+
+  const EMPTY_CONNECTED_TITLE = "Monitoramento estratégico em espera";
+  const EMPTY_CONNECTED_SUBTITLE =
+    "Conexão estável. Insira novas movimentações de pacientes para projetar os indicadores de procedimentos e taxas de confirmação.";
 
   const statusData = useMemo(
     () => [
@@ -288,32 +305,32 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
         <SummaryCard
           icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
           label="Total Agendados"
-          value={semDados ? EMPTY_VALUE : totalAgendados}
-          empty={semDados}
+          value={cardValue(totalAgendados)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-amber-500/60 dark:border-l-amber-500"
           iconColor="text-amber-500"
         />
         <SummaryCard
           icon={<TrendingUp className="h-5 w-5" strokeWidth={1.5} />}
           label="Taxa de Confirmação"
-          value={semDados ? EMPTY_VALUE : taxaConfirmacao}
-          empty={semDados}
+          value={taxaConfirmacao}
+          empty={cardEmpty}
           accent="border-l-4 border-l-emerald-600/60 dark:border-l-emerald-600"
           iconColor="text-emerald-600 dark:text-emerald-500"
         />
         <SummaryCard
           icon={<AlertTriangle className="h-5 w-5" strokeWidth={1.5} />}
           label="Pendências de Confirmação"
-          value={semDados ? EMPTY_VALUE : pendenciasConfirmacao}
-          empty={semDados}
+          value={cardValue(pendenciasConfirmacao)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-rose-600/60 dark:border-l-rose-600"
           iconColor="text-rose-600 dark:text-rose-500"
         />
         <SummaryCard
           icon={<RefreshCw className="h-5 w-5" strokeWidth={1.5} />}
           label="Campanhas de Reativação"
-          value={semDados ? EMPTY_VALUE : campanhasReativacao}
-          empty={semDados}
+          value={cardValue(campanhasReativacao)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-purple-600/60 dark:border-l-purple-500"
           iconColor="text-purple-600 dark:text-purple-400"
         />
@@ -326,7 +343,10 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
         >
           <div className="mt-4 h-[300px]">
             {semProcedimentos ? (
-              <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
+              <EmptyState
+                title={isEmptyButConnected ? EMPTY_CONNECTED_TITLE : EMPTY_TITLE}
+                subtitle={isEmptyButConnected ? EMPTY_CONNECTED_SUBTITLE : EMPTY_SUBTITLE}
+              />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={procedureData} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
@@ -381,7 +401,10 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
         <Panel title="Status dos Agendamentos" subtitle="Distribuição de confirmações">
           <div className="mt-4 h-[300px]">
             {semStatus ? (
-              <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
+              <EmptyState
+                title={isEmptyButConnected ? EMPTY_CONNECTED_TITLE : EMPTY_TITLE}
+                subtitle={isEmptyButConnected ? EMPTY_CONNECTED_SUBTITLE : EMPTY_SUBTITLE}
+              />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

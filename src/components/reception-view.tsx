@@ -61,7 +61,7 @@ function safe(value: string | undefined | null): string {
 
 export function ReceptionView() {
   // Busca silenciosa em segundo plano a cada 10s (sem estados de carregamento).
-  const { appointments, lastUpdate, fetchData } = useAppointments();
+  const { appointments, error, isEmptyButConnected, lastUpdate, fetchData } = useAppointments();
   const [search, setSearch] = useState("");
   const [mounted, setMounted] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -107,6 +107,19 @@ export function ReceptionView() {
     [appointments],
   );
 
+  const EMPTY_CONNECTED_TITLE = "Agenda livre de registros ativos";
+  const EMPTY_CONNECTED_SUBTITLE =
+    "Nenhum atendimento foi lançado no banco de dados para este período.";
+
+  // Auxiliar: decide o valor dos cards conforme o estado de conexão.
+  const cardValue = (real: number) => {
+    if (error) return EMPTY_VALUE;
+    if (isEmptyButConnected) return 0;
+    return real;
+  };
+
+  const cardEmpty = error || (semDados && !isEmptyButConnected);
+
   return (
     <div className="mx-auto max-w-7xl animate-in px-4 pb-16 pt-28 fade-in slide-in-from-bottom-4 duration-500 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -146,8 +159,8 @@ export function ReceptionView() {
         <StatCard
           icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
           label="Atendimentos Históricos"
-          value={semDados ? EMPTY_VALUE : historicos}
-          empty={semDados}
+          value={cardValue(historicos)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-slate-400/50 dark:border-l-slate-400"
           iconColor="text-slate-500 dark:text-slate-400"
         />
@@ -155,16 +168,16 @@ export function ReceptionView() {
         <StatCard
           icon={<Calendar className="h-5 w-5" strokeWidth={1.5} />}
           label="Com Horário Marcado"
-          value={semDados ? EMPTY_VALUE : filaAtiva}
-          empty={semDados}
+          value={cardValue(filaAtiva)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-amber-500/50 dark:border-l-amber-500"
           iconColor="text-amber-600 dark:text-amber-500"
         />
         <StatCard
           icon={<CheckCircle2 className="h-5 w-5" strokeWidth={1.5} />}
           label="Confirmados"
-          value={semDados ? EMPTY_VALUE : confirmados}
-          empty={semDados}
+          value={cardValue(confirmados)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-emerald-600/50 dark:border-l-emerald-600"
           iconColor="text-emerald-600 dark:text-emerald-500"
         />
@@ -172,8 +185,8 @@ export function ReceptionView() {
         <StatCard
           icon={<RefreshCw className="h-5 w-5" strokeWidth={1.5} />}
           label="Pacientes em Reativação"
-          value={semDados ? EMPTY_VALUE : emReativacao}
-          empty={semDados}
+          value={cardValue(emReativacao)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-purple-600/50 dark:border-l-purple-500"
           iconColor="text-purple-600 dark:text-purple-400"
         />
@@ -231,6 +244,11 @@ export function ReceptionView() {
                       <p className="text-center text-sm text-muted-foreground">
                         Nenhum paciente encontrado para esta busca
                       </p>
+                    ) : isEmptyButConnected ? (
+                      <EmptyState
+                        title={EMPTY_CONNECTED_TITLE}
+                        subtitle={EMPTY_CONNECTED_SUBTITLE}
+                      />
                     ) : (
                       <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
                     )}
