@@ -159,8 +159,8 @@ export function ReceptionView() {
         <StatCard
           icon={<Users className="h-5 w-5" strokeWidth={1.5} />}
           label="Atendimentos Históricos"
-          value={semDados ? EMPTY_VALUE : historicos}
-          empty={semDados}
+          value={cardValue(historicos)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-slate-400/50 dark:border-l-slate-400"
           iconColor="text-slate-500 dark:text-slate-400"
         />
@@ -168,16 +168,16 @@ export function ReceptionView() {
         <StatCard
           icon={<Calendar className="h-5 w-5" strokeWidth={1.5} />}
           label="Com Horário Marcado"
-          value={semDados ? EMPTY_VALUE : filaAtiva}
-          empty={semDados}
+          value={cardValue(filaAtiva)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-amber-500/50 dark:border-l-amber-500"
           iconColor="text-amber-600 dark:text-amber-500"
         />
         <StatCard
           icon={<CheckCircle2 className="h-5 w-5" strokeWidth={1.5} />}
           label="Confirmados"
-          value={semDados ? EMPTY_VALUE : confirmados}
-          empty={semDados}
+          value={cardValue(confirmados)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-emerald-600/50 dark:border-l-emerald-600"
           iconColor="text-emerald-600 dark:text-emerald-500"
         />
@@ -185,8 +185,8 @@ export function ReceptionView() {
         <StatCard
           icon={<RefreshCw className="h-5 w-5" strokeWidth={1.5} />}
           label="Pacientes em Reativação"
-          value={semDados ? EMPTY_VALUE : emReativacao}
-          empty={semDados}
+          value={cardValue(emReativacao)}
+          empty={cardEmpty}
           accent="border-l-4 border-l-purple-600/50 dark:border-l-purple-500"
           iconColor="text-purple-600 dark:text-purple-400"
         />
