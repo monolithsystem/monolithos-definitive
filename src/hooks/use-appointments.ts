@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { parseCSV, mockAppointments, type Appointment } from "@/lib/sheets";
+import { parseCSV, type Appointment } from "@/lib/sheets";
 
 function serialize(appts: Appointment[]): string {
   return appts
@@ -14,13 +14,19 @@ function serialize(appts: Appointment[]): string {
  * Busca os dados da planilha a cada 10 segundos de forma 100% silenciosa:
  * nenhum estado de carregamento é alternado após a primeira carga, e os dados
  * antigos permanecem intactos até que um conjunto novo os substitua.
+ *
+ * Estados de vazio:
+ * - error = true  → falha de rede/link inválido (sem conexão).
+ * - isEmptyButConnected = true → conectado, mas planilha não tem linhas válidas.
  */
 export function useAppointments(enabled = true) {
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [lastUpdate, setLastUpdate] = useState<Date>(() => new Date());
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<boolean>(false);
+  const [isEmptyButConnected, setIsEmptyButConnected] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const prevSignature = useRef<string>(serialize(mockAppointments));
+  const prevSignature = useRef<string>(serialize([]));
   const inFlight = useRef(false);
 
   const fetchData = useCallback(async () => {
@@ -30,7 +36,11 @@ export function useAppointments(enabled = true) {
     try {
       const url = import.meta.env["VITE_SHEETS_URL"] as string | undefined;
       if (!url) {
+        setError(true);
+        setIsEmptyButConnected(false);
+        setAppointments([]);
         setLastUpdate(new Date());
+        setLoading(false);
         return;
       }
 
@@ -39,21 +49,32 @@ export function useAppointments(enabled = true) {
 
       const text = await res.text();
       const parsed = parseCSV(text);
-      if (parsed.length > 0) {
+
+      if (parsed.length === 0) {
+        // Conexão OK, mas planilha vazia.
+        setError(false);
+        setIsEmptyButConnected(true);
+        setAppointments([]);
+      } else {
         const sig = serialize(parsed);
         if (sig !== prevSignature.current) {
           prevSignature.current = sig;
           // Substituição instantânea, sem limpar a tela antes.
           setAppointments(parsed);
         }
+        setError(false);
+        setIsEmptyButConnected(false);
       }
-      setError(null);
+
       setLastUpdate(new Date());
     } catch (err) {
       // Falha silenciosa: mantém os dados anteriores em tela.
-      setError(err instanceof Error ? err.message : "Erro ao buscar dados");
+      setError(true);
+      setIsEmptyButConnected(false);
+      setAppointments([]);
     } finally {
       inFlight.current = false;
+      setLoading(false);
     }
   }, []);
 
@@ -64,5 +85,5 @@ export function useAppointments(enabled = true) {
     return () => clearInterval(id);
   }, [enabled, fetchData]);
 
-  return { appointments, error, lastUpdate, fetchData };
+  return { appointments, error, isEmptyButConnected, loading, lastUpdate, fetchData };
 }
