@@ -61,7 +61,7 @@ function safe(value: string | undefined | null): string {
 
 export function ReceptionView() {
   // Busca silenciosa em segundo plano a cada 10s (sem estados de carregamento).
-  const { appointments, lastUpdate, fetchData } = useAppointments();
+  const { appointments, error, isEmptyButConnected, lastUpdate, fetchData } = useAppointments();
   const [search, setSearch] = useState("");
   const [mounted, setMounted] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -106,6 +106,19 @@ export function ReceptionView() {
     () => appointments.filter((a) => Number(a.tentativasReativacao ?? 0) > 0).length,
     [appointments],
   );
+
+  const EMPTY_CONNECTED_TITLE = "Agenda livre de registros ativos";
+  const EMPTY_CONNECTED_SUBTITLE =
+    "Nenhum atendimento foi lançado no banco de dados para este período.";
+
+  // Auxiliar: decide o valor dos cards conforme o estado de conexão.
+  const cardValue = (real: number) => {
+    if (error) return EMPTY_VALUE;
+    if (isEmptyButConnected) return 0;
+    return real;
+  };
+
+  const cardEmpty = error || (semDados && !isEmptyButConnected);
 
   return (
     <div className="mx-auto max-w-7xl animate-in px-4 pb-16 pt-28 fade-in slide-in-from-bottom-4 duration-500 sm:px-6 lg:px-8">
