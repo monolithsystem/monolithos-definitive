@@ -244,6 +244,11 @@ export function ReceptionView() {
                       <p className="text-center text-sm text-muted-foreground">
                         Nenhum paciente encontrado para esta busca
                       </p>
+                    ) : isEmptyButConnected ? (
+                      <EmptyState
+                        title={EMPTY_CONNECTED_TITLE}
+                        subtitle={EMPTY_CONNECTED_SUBTITLE}
+                      />
                     ) : (
                       <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
                     )}
