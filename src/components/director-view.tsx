@@ -401,7 +401,10 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
         <Panel title="Status dos Agendamentos" subtitle="Distribuição de confirmações">
           <div className="mt-4 h-[300px]">
             {semStatus ? (
-              <EmptyState title={EMPTY_TITLE} subtitle={EMPTY_SUBTITLE} />
+              <EmptyState
+                title={isEmptyButConnected ? EMPTY_CONNECTED_TITLE : EMPTY_TITLE}
+                subtitle={isEmptyButConnected ? EMPTY_CONNECTED_SUBTITLE : EMPTY_SUBTITLE}
+              />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
