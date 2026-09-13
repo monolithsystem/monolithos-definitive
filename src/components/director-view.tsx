@@ -22,7 +22,6 @@ import {
   tooltipStyles,
   isCancelado,
   isConfirmado,
-  isEmTransicao,
   isFilaAtiva,
   isPendenteAtendente,
 } from "@/lib/theme-classes";

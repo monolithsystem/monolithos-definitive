@@ -65,7 +65,7 @@ export function getStatusStyle(status?: string | null): StatusStyle {
     return {
       label: "Pendente",
       ...ROSE,
-      pulse: false,
+      pulse: true,
     };
   }
 
