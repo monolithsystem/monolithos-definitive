@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Lock,
-  LockOpen,
+  Unlock,
   LogOut,
   AlertCircle,
   Eye,
@@ -22,7 +22,6 @@ import {
   tooltipStyles,
   isCancelado,
   isConfirmado,
-  isEmTransicao,
   isFilaAtiva,
   isPendenteAtendente,
 } from "@/lib/theme-classes";
@@ -54,22 +53,29 @@ export function DirectorView({ unlocked, onUnlock }: DirectorViewProps) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const [showPin, setShowPin] = useState(false);
-  const [granted, setGranted] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [fading, setFading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const unlockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const targetPin = (import.meta.env["VITE_DIRETOR_PIN"] as string | undefined) || "2008";
   const pinLength = targetPin.length;
 
   const handleUnlock = () => {
-    if (granted) return;
+    if (isUnlocking) return;
     if (pin === targetPin) {
       setError(false);
-      setGranted(true);
-      // Congela 400ms para exibir a sequência de sucesso antes de trocar de tela.
-      setTimeout(() => {
-        onUnlock(true);
-        setGranted(false);
-      }, 400);
+      setIsUnlocking(true);
+      // Primeiro revela os cadeados abertos; depois inicia a saída cinematográfica.
+      fadeTimerRef.current = setTimeout(() => {
+        setFading(true);
+        unlockTimerRef.current = setTimeout(() => {
+          onUnlock(true);
+          setIsUnlocking(false);
+          setFading(false);
+        }, 1100);
+      }, 450);
     } else {
       setError(true);
       setPin("");
@@ -80,12 +86,20 @@ export function DirectorView({ unlocked, onUnlock }: DirectorViewProps) {
 
   // Validação 100% automática ao digitar o último número do código.
   useEffect(() => {
-    if (unlocked || granted) return;
+    if (unlocked || isUnlocking) return;
     if (pinLength > 0 && pin.length >= pinLength && /^\d+$/.test(pin)) {
       handleUnlock();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pin, pinLength, unlocked, granted]);
+  }, [pin, pinLength, unlocked, isUnlocking]);
+
+  useEffect(
+    () => () => {
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
+      if (unlockTimerRef.current) clearTimeout(unlockTimerRef.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!unlocked) {
@@ -106,20 +120,31 @@ export function DirectorView({ unlocked, onUnlock }: DirectorViewProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 pt-16">
+    <div
+      className={cn(
+        "flex min-h-screen items-center justify-center px-4 pt-16 transition-opacity duration-1000 ease-in-out",
+        fading ? "opacity-0" : "opacity-100",
+      )}
+    >
       <div className="w-full max-w-md animate-fade-in-up">
         <div className={cn("relative overflow-hidden p-8 rounded-2xl", SURFACE)}>
           <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-gradient-gold opacity-[0.08] blur-3xl" />
 
           <div className="relative flex flex-col items-center text-center">
-            {granted ? (
-              <LockOpen
-                className="h-10 w-10 animate-[mono-unlock_0.5s_ease-out] text-emerald-400"
-                strokeWidth={1.25}
-              />
-            ) : (
-              <Lock className="h-10 w-10 text-gold" strokeWidth={1.25} />
-            )}
+            <div
+              className={cn(
+                "flex h-16 w-16 items-center justify-center rounded-full border border-amber-500/20 transition-all duration-500",
+                isUnlocking
+                  ? "animate-bounce rotate-12 scale-110 border-blue-500 bg-blue-500/20 shadow-[0_0_25px_rgba(59,130,246,0.6)]"
+                  : "text-gold",
+              )}
+            >
+              {isUnlocking ? (
+                <Unlock className="h-10 w-10 text-blue-400" strokeWidth={1.25} />
+              ) : (
+                <Lock className="h-10 w-10" strokeWidth={1.25} />
+              )}
+            </div>
 
             <h2 className="mt-6 font-serif text-2xl font-semibold tracking-tight text-foreground">
               Área Restrita
@@ -136,6 +161,7 @@ export function DirectorView({ unlocked, onUnlock }: DirectorViewProps) {
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
                   onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
+                  disabled={isUnlocking}
                   placeholder={"•".repeat(pinLength || 4)}
                   inputMode="numeric"
                   maxLength={pinLength || 8}
@@ -169,16 +195,17 @@ export function DirectorView({ unlocked, onUnlock }: DirectorViewProps) {
 
               <button
                 onClick={handleUnlock}
+                disabled={isUnlocking}
                 className={cn(
                   "mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all duration-500 active:scale-[0.98]",
-                  granted
-                    ? "bg-emerald-600 text-white shadow-[0_0_24px_-4px_rgba(16,185,129,0.6)]"
+                  isUnlocking
+                    ? "bg-blue-600 text-white shadow-[0_0_24px_-4px_rgba(59,130,246,0.7)]"
                     : "bg-gradient-gold text-black hover:shadow-glow-gold",
                 )}
               >
-                {granted ? (
+                {isUnlocking ? (
                   <>
-                    <LockOpen className="h-4 w-4" strokeWidth={1.75} />
+                    <Unlock className="h-4 w-4" strokeWidth={1.75} />
                     Acesso Concedido...
                   </>
                 ) : (
@@ -210,7 +237,21 @@ function DirectorDashboard({ onLogout }: { onLogout: () => void }) {
     [appointments],
   );
   const emTransicao = useMemo(
-    () => appointments.filter((a) => isEmTransicao(a.status)).length,
+    () =>
+      appointments.filter((a) => {
+        const status = (a.status ?? "")
+          .toLowerCase()
+          .trim()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+        if (isCancelado(status)) return false;
+        return (
+          status.includes("agendado") ||
+          status.includes("pendente atendente") ||
+          (status.includes("espera") && status.includes("confirmacao")) ||
+          status.includes("reagendamento")
+        );
+      }).length,
     [appointments],
   );
   // Estrito: conta APENAS linhas cujo status contém 'pendente atendente'.

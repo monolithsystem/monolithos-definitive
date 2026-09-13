@@ -278,18 +278,19 @@ export function ReceptionView() {
                     <td className="p-4">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium",
-                          style.className,
+                          "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium shadow-sm transition-colors",
+                          style.bg,
+                          style.text,
+                          style.border,
                         )}
                       >
                         <span
                           className={cn(
-                            "h-1.5 w-1.5 rounded-full",
-                            style.dot,
-                            style.pulse && "animate-pulse",
+                            "h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current",
+                            style.pulse ? "animate-pulse" : "",
                           )}
                         />
-                        {style.label}
+                        <span>{style.label}</span>
                       </span>
                     </td>
                     <td className="whitespace-nowrap p-4 text-muted-foreground">

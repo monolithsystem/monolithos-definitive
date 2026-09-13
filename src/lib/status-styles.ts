@@ -1,33 +1,49 @@
 export type StatusStyle = {
   label: string;
-  className: string;
-  dot: string;
+  bg: string;
+  text: string;
+  border: string;
   hex: string;
   pulse: boolean;
 };
 
-/** Paleta estrita de alta costura — pílula translúcida + micro ponto brilhante. */
-const EMERALD =
-  "bg-emerald-100 text-zinc-900 ring-1 ring-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20";
-const GOLD =
-  "bg-amber-100 text-zinc-900 ring-1 ring-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20";
-const ORANGE =
-  "bg-orange-100 text-zinc-900 ring-1 ring-orange-500/40 dark:bg-orange-500/10 dark:text-orange-300 dark:ring-orange-500/25";
-const VIOLET =
-  "bg-violet-100 text-zinc-900 ring-1 ring-violet-500/40 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/25";
-const CYAN =
-  "bg-cyan-100 text-zinc-900 ring-1 ring-cyan-500/40 dark:bg-sky-500/10 dark:text-cyan-300 dark:ring-cyan-500/25";
-const PLATINUM =
-  "bg-slate-200 text-zinc-900 ring-1 ring-slate-400/50 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-400/20";
-/** Fallback de segurança: status vazio ou desconhecido. */
-const TITANIUM =
-  "bg-slate-100 text-slate-700 ring-1 ring-slate-300 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700";
-/** Vermelho rubi / carmim de urgência — pendente atendente. */
-const RUBY =
-  "bg-rose-50 text-rose-800 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-500/20";
-/** Cinza carbono apagado — cancelado (dado morto). */
-const CARBON =
-  "bg-zinc-100 text-zinc-500 border border-zinc-200 dark:bg-zinc-900/60 dark:text-zinc-600 dark:border-zinc-800";
+/** Paleta estrita de alta costura: fundos translúcidos e bordas delicadas. */
+const EMERALD = {
+  bg: "bg-emerald-500/10 dark:bg-emerald-500/5",
+  text: "text-emerald-800 dark:text-emerald-400",
+  border: "border-emerald-500/30 dark:border-emerald-500/20",
+  hex: "#059669",
+};
+const GOLD = {
+  bg: "bg-amber-500/10 dark:bg-amber-500/5",
+  text: "text-amber-800 dark:text-amber-400",
+  border: "border-amber-500/30 dark:border-amber-500/20",
+  hex: "#d97706",
+};
+const BLUE = {
+  bg: "bg-blue-500/10 dark:bg-blue-500/5",
+  text: "text-blue-700 dark:text-blue-400",
+  border: "border-blue-500/30 dark:border-blue-500/20",
+  hex: "#2563eb",
+};
+const PURPLE = {
+  bg: "bg-purple-500/10 dark:bg-purple-500/5",
+  text: "text-purple-800 dark:text-purple-400",
+  border: "border-purple-500/30 dark:border-purple-500/20",
+  hex: "#9333ea",
+};
+const ROSE = {
+  bg: "bg-rose-500/10 dark:bg-rose-500/5",
+  text: "text-rose-800 dark:text-rose-400",
+  border: "border-rose-500/30 dark:border-rose-500/20",
+  hex: "#dc2626",
+};
+const ZINC = {
+  bg: "bg-zinc-500/10 dark:bg-zinc-500/5",
+  text: "text-zinc-800 dark:text-zinc-400",
+  border: "border-zinc-500/30 dark:border-zinc-500/20",
+  hex: "#71717a",
+};
 
 function titleCase(value: string): string {
   return value
@@ -48,70 +64,50 @@ export function getStatusStyle(status?: string | null): StatusStyle {
   if (!s) {
     return {
       label: "Pendente",
-      className: TITANIUM,
-      dot: "bg-slate-500 dark:bg-zinc-500",
-      hex: "#334155",
-      pulse: false,
-    };
-  }
-
-
-  // 3. Espera + confirmação → laranja neon suave
-  if (s.includes("espera") && s.includes("confirma")) {
-    return {
-      label: "À Espera Confirmação",
-      className: ORANGE,
-      dot: "bg-orange-400",
-      hex: "#FB923C",
+      ...ROSE,
       pulse: true,
     };
   }
 
-  // 4. Espera + reagendamento → roxo elétrico
-  if (s.includes("espera") && s.includes("reagenda")) {
+  // Esperas e reagendamentos → azul clínico suave.
+  if (
+    (s.includes("espera") && s.includes("confirmacao")) ||
+    s.includes("reagendamento")
+  ) {
     return {
-      label: "À Espera Reagendamento",
-      className: VIOLET,
-      dot: "bg-violet-400",
-      hex: "#8B5CF6",
+      label: s.includes("reagendamento") ? "À Espera Reagendamento" : "À Espera Confirmação",
+      ...BLUE,
       pulse: false,
     };
   }
 
-  // 1. Confirmado → verde esmeralda
+  // Confirmado e realizado → verde esmeralda.
   if (s.includes("confirmado")) {
     return {
       label: "Confirmado",
-      className: EMERALD,
-      dot: "bg-emerald-400",
-      hex: "#10B981",
+      ...EMERALD,
       pulse: false,
     };
   }
 
-  // 2. Agendado → amarelo ouro
-  if (s.includes("agendado")) {
-    return { label: "Agendado", className: GOLD, dot: "bg-amber-400", hex: "#F59E0B", pulse: false };
-  }
-
-  // 5. Avaliação / Google → azul royal / ciano
-  if (s.includes("avaliacao") || s.includes("google")) {
-    return {
-      label: "Avaliação Google",
-      className: CYAN,
-      dot: "bg-cyan-400",
-      hex: "#22D3EE",
-      pulse: false,
-    };
-  }
-
-  // 6. Realizado → cinza platina / titânio fosco
   if (s.includes("realizado")) {
     return {
       label: "Realizado",
-      className: PLATINUM,
-      dot: "bg-slate-400",
-      hex: "#94A3B8",
+      ...EMERALD,
+      pulse: false,
+    };
+  }
+
+  // Agendado → dourado premium.
+  if (s.includes("agendado")) {
+    return { label: "Agendado", ...GOLD, pulse: false };
+  }
+
+  // Avaliação / Google → roxo.
+  if (s.includes("avaliacao") || s.includes("google")) {
+    return {
+      label: "Avaliação Google",
+      ...PURPLE,
       pulse: false,
     };
   }
@@ -119,9 +115,7 @@ export function getStatusStyle(status?: string | null): StatusStyle {
   if (s.includes("pendente") || s.includes("atendente")) {
     return {
       label: "Pendente Atendente",
-      className: RUBY,
-      dot: "bg-rose-500 dark:bg-rose-400",
-      hex: "#E11D48",
+      ...ROSE,
       pulse: true,
     };
   }
@@ -129,18 +123,14 @@ export function getStatusStyle(status?: string | null): StatusStyle {
   if (s.includes("cancelado")) {
     return {
       label: "Cancelado",
-      className: CARBON,
-      dot: "bg-zinc-400 dark:bg-zinc-600",
-      hex: "#A1A1AA",
+      ...ZINC,
       pulse: false,
     };
   }
 
   return {
     label: titleCase(s),
-    className: TITANIUM,
-    dot: "bg-slate-500 dark:bg-zinc-500",
-    hex: "#334155",
+    ...ZINC,
     pulse: false,
   };
 }
